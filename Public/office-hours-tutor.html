@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office Hours - Tutor View</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body class="office-page">
+  <script src="navbar.js"></script>
+
+  <main>
+    <div class="office-hours-container">
+      <h1>Office Hours</h1>
+      <div id="office-hours-status">
+        <h2 id="office-hours-message">Loading...</h2>
+      </div>
+      
+      <div id="tutor-toggle">
+        <button id="toggle-office-hours" onclick="toggleOfficeHours()">Toggle Office Hours</button>
+      </div>
+
+      <div id="classes-list">
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      loadOfficeHoursStatus();
+      loadClassesWithQueue();
+    });
+
+    function loadOfficeHoursStatus() {
+      fetch('/get-office-hours-status')
+        .then(response => response.json())
+        .then(data => {
+          const messageElement = document.getElementById("office-hours-message");
+          messageElement.textContent = data.status === 'open' ? "Office Hours are open" : "No current office hours";
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    setInterval(function() {
+        window.location.reload();
+      }, 20000)
+
+    function toggleOfficeHours() {
+        fetch('/toggle-office-hours', { method: 'POST' })
+          .then(response => response.json())
+          .then(data => {
+            const messageElement = document.getElementById("office-hours-message");
+            messageElement.textContent = data.status === 'open' ? "Office Hours are open" : "No current office hours";
+      
+            if (data.status === 'closed') {
+              fetch('/clear-queue', { method: 'POST' })
+                .then(response => response.json())
+                .then(clearData => {
+                  if (clearData.success) {
+                    console.log('Queue cleared successfully');
+                  } else {
+                    console.error('Failed to clear queue:', clearData.message);
+                  }
+                  window.location.reload();
+                })
+                .catch(error => {
+                  console.error('Error clearing queue:', error);
+                  window.location.reload();
+                });
+            } else {
+              window.location.reload();
+            }
+          })
+          .catch(error => console.error('Error toggling office hours:', error));
+      }
+      
+
+    function loadClassesWithQueue() {
+      fetch('/get-tutor-classes-with-queue')
+        .then(response => response.json())
+        .then(data => {
+          const classesList = document.getElementById("classes-list");
+          classesList.innerHTML = ''; 
+
+          data.classes.forEach(course => {
+            const classContainer = document.createElement("div");
+            classContainer.className = "class-container";
+            
+            const classTitle = document.createElement("h3");
+            classTitle.textContent = course.name;
+            classContainer.appendChild(classTitle);
+
+            if (course.student) {
+              const studentInfo = document.createElement("div");
+              studentInfo.className = "student-info";
+              studentInfo.textContent = `Student: ${course.student.username}`;
+              
+              const zoomLinkInput = document.createElement("input");
+              zoomLinkInput.type = "text";
+              zoomLinkInput.placeholder = "Enter Zoom link";
+              zoomLinkInput.className = "zoom-link-input";
+              studentInfo.appendChild(zoomLinkInput);
+
+              const acceptButton = document.createElement("button");
+              acceptButton.className = "accept-button";
+              acceptButton.textContent = "Accept";
+              acceptButton.disabled = true; // Initially disabled
+
+              zoomLinkInput.addEventListener("input", () => {
+                acceptButton.disabled = !zoomLinkInput.value.trim();
+              });
+
+              acceptButton.onclick = () => acceptStudent(course.student.queueId, zoomLinkInput.value.trim());
+              studentInfo.appendChild(acceptButton);
+
+              classContainer.appendChild(studentInfo);
+            } else {
+              const emptyMessage = document.createElement("p");
+              emptyMessage.textContent = "(Empty)";
+              classContainer.appendChild(emptyMessage);
+            }
+
+            classesList.appendChild(classContainer);
+          });
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    
+    function acceptStudent(queueId, zoomLink) {
+      fetch(`/accept-student/${queueId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zoomLink })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Student accepted. Zoom link has been sent to them.");
+          loadClassesWithQueue(); 
+        } else {
+          alert("Failed to accept the student.");
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>

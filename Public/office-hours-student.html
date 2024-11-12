@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office Hours - Student View</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body class="office-page">
+  <script src="navbar.js"></script>
+
+  <main>
+    <div class="office-hours-container">
+      <h1>Office Hours</h1>
+      <div id="office-hours-status">
+        <h2 id="office-hours-message">Loading...</h2>
+      </div>
+  
+      <div id="queue-section" style="display: none; margin-top: 20px;">
+        <div id="course-selection">
+          <label for="course">Select a course to focus on:</label>
+          <select id="course" required>
+            <option value="">-- Select Course --</option>
+            <option value="Compsci 101">Compsci 101</option>
+            <option value="Compsci 102">Compsci 102</option>
+            <option value="Compsci 201">Compsci 201</option>
+            <option value="Compsci 250">Compsci 250</option>
+            <option value="Compsci 210">Compsci 210</option>
+            <option value="Compsci 230">Compsci 230</option>
+            <option value="Compsci 310">Compsci 310</option>
+            <option value="Compsci 316">Compsci 316</option>
+            <option value="Compsci 330">Compsci 330</option>
+            <option value="Compsci 350">Compsci 350</option>
+            <option value="Compsci 352">Compsci 352</option>
+            <option value="Compsci 356">Compsci 356</option>
+            <option value="Compsci 370">Compsci 370</option>
+            <option value="Compsci 371">Compsci 371</option>
+            <option value="Compsci 512">Compsci 512</option>
+          </select>
+        </div>
+        <button id="join-queue" onclick="joinQueue()" style="margin-top: 10px;">Join Queue</button>
+        <div id="queue-position" style="display: none; font-weight: bold; margin-top: 10px;"></div>
+        <p id="disclaimer" style="color: red; margin-top: 10px;">Please do not refresh the page. You will be redirected once admitted.</p>
+        <br>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      loadOfficeHoursStatus();
+    });
+
+    function loadOfficeHoursStatus() {
+      fetch('/get-office-hours-status')
+        .then(response => response.json())
+        .then(data => {
+          const messageElement = document.getElementById("office-hours-message");
+          messageElement.textContent = data.status === 'open' ? "Office Hours are open" : "No current office hours";
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function joinQueue() {
+      const course = document.getElementById("course").value;
+      if (!course) {
+        alert("Please select a course before joining the queue.");
+        return;
+      }
+
+      fetch('/join-queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ course })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const queuePositionElement = document.getElementById("queue-position");
+          queuePositionElement.textContent = `You are #${data.position} in the queue`;
+          queuePositionElement.style.display = "block";
+          document.getElementById("join-queue").style.display = "none";
+
+          checkAdmissionStatus(data.queueId);
+        } else {
+          alert("Failed to join the queue. Please try again.");
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+
+    function checkAdmissionStatus(queueId) {
+      setInterval(() => {
+        fetch(`/check-admission-status/${queueId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.admitted) {
+              window.location.href = data.zoomLink; 
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }, 5000); 
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadOfficeHoursStatus();
+      });
+
+    function loadOfficeHoursStatus() {
+        fetch('/get-office-hours-status')
+          .then(response => response.json())
+          .then(data => {
+            const messageElement = document.getElementById("office-hours-message");
+            const queueSection = document.getElementById("queue-section");
+            const disclaimer = document.getElementById("disclaimer");
+    
+            if (data.status === 'open') {
+              messageElement.textContent = "Office Hours are open";
+              queueSection.style.display = "block";  
+              disclaimer.style.display = "block";    
+            } else {
+              messageElement.textContent = "No current office hours";
+              queueSection.style.display = "none";   
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      function checkOfficeHoursStatus() {
+        fetch('/get-office-hours-status')
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'closed') {
+              window.location.reload(); 
+            }
+          })
+          .catch(error => console.error('Error checking office hours status:', error));
+      }
+    
+      setInterval(checkOfficeHoursStatus, 10000);
+
+
+  </script>
+</body>
+</html>

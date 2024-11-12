@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roles - Student Overflow</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body class="roles-page">
+  <script src="navbar.js"></script>
+
+  <main>
+    <div class="roles-container">
+      <h1>Manage Roles</h1>
+      
+      <div class="input-section">
+        <label for="username">Enter Username to Promote to Tutor:</label>
+        <input type="text" id="username" class="user-input" placeholder="Username">
+        <button class="submit-btn" onclick="promoteToTutor()">Promote to Tutor</button>
+        <div id="success-message" style="display: none; color: green; font-weight: bold; margin-top: 10px;"></div>
+      </div>
+
+      &nbsp
+
+      <h2>Select Classes You're Proficient In:</h2>
+      <div class="class-selection">
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 101">Compsci 101</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 102">Compsci 102</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 201">Compsci 201</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 250">Compsci 250</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 210">Compsci 210</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 230">Compsci 230</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 310">Compsci 310</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 316">Compsci 316</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 330">Compsci 330</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 350">Compsci 350</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 352">Compsci 352</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 356">Compsci 356</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 370">Compsci 370</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 371">Compsci 371</div>
+        <div class="class-button" onclick="toggleClass(this)" data-class="Compsci 512">Compsci 512</div>
+      </div>
+
+      <button class="submit-btn" onclick="submitClasses()">Save Selected Classes</button>
+      <div id="class-message" style="display: none; color: green; font-weight: bold; margin-top: 10px;"></div>
+    </div>
+  </main>
+
+  <script>
+    function toggleClass(element) {
+      element.classList.toggle("selected");
+    }
+
+    function promoteToTutor() {
+      const username = document.getElementById('username').value;
+      const successMessage = document.getElementById('success-message');
+
+      if (username) {
+        fetch('/promote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username })
+        })
+        .then(response => response.json())
+        .then(data => {
+          successMessage.textContent = data.message;
+          successMessage.style.display = 'block';
+          successMessage.style.color = data.success ? 'green' : 'red';
+          setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          successMessage.textContent = 'An error occurred. Please try again.';
+          successMessage.style.display = 'block';
+          successMessage.style.color = 'red';
+          setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
+        });
+      } else {
+        alert('Please enter a username.');
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch('/get-classes')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const selectedClasses = data.classes;
+            selectedClasses.forEach(className => {
+              const classButton = document.querySelector(`.class-button[data-class="${className}"]`);
+              if (classButton) {
+                classButton.classList.add("selected");
+              }
+            });
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    function submitClasses() {
+      const selectedClasses = Array.from(document.querySelectorAll('.class-button.selected'))
+                                .map(button => button.getAttribute('data-class'));
+
+      fetch('/update-classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classes: selectedClasses })
+      })
+      .then(response => response.json())
+      .then(data => {
+        const classMessage = document.getElementById('class-message');
+        classMessage.textContent = data.message;
+        classMessage.style.display = 'block';
+        classMessage.style.color = data.success ? 'green' : 'red';
+        setTimeout(() => { classMessage.style.display = 'none'; }, 3000);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        const classMessage = document.getElementById('class-message');
+        classMessage.textContent = 'An error occurred. Please try again.';
+        classMessage.style.display = 'block';
+        classMessage.style.color = 'red';
+        setTimeout(() => { classMessage.style.display = 'none'; }, 3000);
+      });
+    }
+  </script>
+</body>
+</html>

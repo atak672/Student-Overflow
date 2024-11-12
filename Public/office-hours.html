@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office Hours - Student Overflow</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body class="office-hours-page">
+  <script src="navbar.js"></script> <!-- Navbar inclusion -->
+
+  <main>
+    <div class="office-hours-container">
+      <h1>Office Hours</h1>
+      
+      <div id="office-hours-status">
+        <h2 id="office-hours-message">Loading...</h2>
+      </div>
+
+      <div id="tutor-toggle" style="display: none;">
+        <button id="toggle-office-hours" onclick="toggleOfficeHours()">Toggle Office Hours</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      fetch('/check-tutor-status')
+        .then(response => response.json())
+        .then(data => {
+          if (data.isTutor) {
+            document.getElementById("tutor-toggle").style.display = "block";
+          }
+          loadOfficeHoursStatus();
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    function loadOfficeHoursStatus() {
+      fetch('/get-office-hours-status')
+        .then(response => response.json())
+        .then(data => {
+          const messageElement = document.getElementById("office-hours-message");
+          messageElement.textContent = data.status === 'open' ? "Office Hours are open" : "No current office hours";
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function toggleOfficeHours() {
+      fetch('/toggle-office-hours', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          const messageElement = document.getElementById("office-hours-message");
+          messageElement.textContent = data.status === 'open' ? "Office Hours are open" : "No current office hours";
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>

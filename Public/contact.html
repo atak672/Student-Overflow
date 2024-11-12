@@ -1,0 +1,54 @@
+<!-- public/contact.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Student Overflow</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="navbar.css">
+</head>
+<body class="contact-page">
+  <script src="navbar.js"></script>
+<main>
+  <div class="contact-container centered-content">
+    <h1>Contact Us</h1>
+    <p>If you have any questions, need personalized tutoring, or have other inquiries, please feel free to reach out! We’ll get back to you within 3 business days.</p>
+    
+    <form id="contactForm">
+      <input type="text" name="name" placeholder="Your Name" required>
+      <input type="email" name="email" placeholder="Your Email" required>
+      <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+  </div>
+</main>
+
+<script>
+  document.getElementById('contactForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch('/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert("Your message has been sent! We’ll get back to you within 3 business days.");
+        e.target.reset(); 
+      } else {
+        const result = await response.json();
+        alert(result.message || "There was an error sending your message. Please try again later.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("There was an error connecting to the server.");
+    }
+  };
+</script>
+</body>
+</html>

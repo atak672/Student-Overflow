@@ -1,0 +1,41 @@
+
+#logoutButton {
+    background-color: #f0a500; 
+    color: #fff;
+    padding: 6px 12px; 
+    font-size: 1rem; 
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 15px; 
+  }
+  
+  #logoutButton:hover {
+    background-color: #c9302c; 
+  }
+
+  
+
+#navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 0, 0.7);
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  #navbar .nav-links a {
+    color: #ffffff;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+  }
+  
+  #navbar .nav-links a:hover {
+    color: #f0a500;
+  }
