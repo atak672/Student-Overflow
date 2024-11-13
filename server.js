@@ -237,11 +237,20 @@ app.get('/office-hours-student', requireLogin, (req, res) => res.sendFile(__dirn
 app.get('/office-hours-tutor', requireLogin, (req, res) => res.sendFile(__dirname + '/public/office-hours-tutor.html'));
 
 app.post('/register', (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ message: 'All fields are required.' });
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  const checkUserQuery = `SELECT username FROM users WHERE username = ?`;
+  db.get(checkUserQuery, [username], (err, row) => {
+    if (err) {
+      return res.status(500).json({ message: 'Database error.' });
     }
-  
+    if (row) {
+      return res.status(409).json({ message: 'Username already taken.' });
+    }
+
     const query = `INSERT INTO users (username, password, user_type) VALUES (?, ?, ?)`;
     db.run(query, [username, password, 'student'], function (err) {
       if (err) {
@@ -250,6 +259,8 @@ app.post('/register', (req, res) => {
       res.status(201).json({ message: 'Registration successful. You can now log in.' });
     });
   });
+});
+
 
 
 app.post('/promote', (req, res) => {
