@@ -24,4 +24,4 @@ Ensure the following dependencies are installed to run locally:
 - **express-session** 
 - **nodemailer** 
 
-- Simply point to the project directory locally, run **node server.js** and direct to your repective local host. 
+Simply point to the project directory locally, run **node server.js**, and open your browser to your local host (e.g., http://localhost:3000) to access the application.
