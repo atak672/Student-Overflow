@@ -2,11 +2,13 @@
 
 A locally hosted web application that supports **Student Overflow**, a peer-led tutoring group aimed at addressing the overcrowding in computer science departments. Originally developed as a website, my code has since been repurposed into a **Discord server** for streamlined student and tutor interactions.
 
-## Project Overview
+This project provides a platform for students and tutors to connect in real time during designated office hours. Users are able to join queues based on course requirements, while tutors can monitor and assist students through Zoom links or similar means. The original website has been converted to a locally hosted version included in this repository.
+
+## Video Tour
 
 [![Student Overflow Tour](https://img.youtube.com/vi/bdgnhDnColE/0.jpg)](https://youtu.be/bdgnhDnColE)
 
-This project provides a platform for students and tutors to connect in real time during designated office hours. Users are able to join queues based on course requirements, while tutors can monitor and assist students through Zoom links or similar means. The original website has been converted to a locally hosted version included in this repository.
+**Please click above to see a quick video tour**
 
 ## Features
 
